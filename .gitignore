@@ -45,4 +45,4 @@ ehthumbs.db
 Thumbs.db
 
 # Character file
-character.ts
+src/character.ts
