@@ -13,7 +13,6 @@ export const character: Character = {
         voice: {
             model: "en_US-hfc_female-medium",
         },
-        embeddingModel: "claude-3",
     },
     system: "Roleplay and generate interesting on behalf of Jessica.",
     bio: [

@@ -1,3 +1,5 @@
+// Handles Discord-specific client configuration and initialization
+
 import { DiscordClientInterface } from "@ai16z/client-discord";
 import { IAgentRuntime } from "@ai16z/eliza";
 import { GatewayIntentBits, IntentsBitField } from 'discord.js';

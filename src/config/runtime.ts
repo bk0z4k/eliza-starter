@@ -1,3 +1,5 @@
+// Manages the core runtime configuration for any agent
+
 import { 
     AgentRuntime, 
     Character, 

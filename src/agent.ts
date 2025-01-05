@@ -1,3 +1,5 @@
+// Manages the creation and configuration of an agent runtime
+
 import { AgentRuntime, Character, IDatabaseAdapter, ICacheManager } from "@ai16z/eliza";
 import { configureRuntime } from "./config/runtime";
 
