@@ -1,5 +1,10 @@
-// Orchestrates the overall application flow
+/**
+ * index.ts - Main Entry Point
+ * This file orchestrates the overall application flow, handling character initialization,
+ * client setup, and runtime management for the AI agent system.
+ */
 
+// Import various client interfaces for different platforms (Discord, Telegram, etc.)
 import { PostgresDatabaseAdapter } from "@ai16z/adapter-postgres";
 import { SqliteDatabaseAdapter } from "@ai16z/adapter-sqlite";
 import { DirectClientInterface } from "@ai16z/client-direct";
@@ -7,6 +12,8 @@ import { DiscordClientInterface } from "@ai16z/client-discord";
 import { AutoClientInterface } from "@ai16z/client-auto";
 import { TelegramClientInterface } from "@ai16z/client-telegram";
 import { TwitterClientInterface } from "@ai16z/client-twitter";
+
+// Import core functionality and types from the eliza framework
 import {
   DbCacheAdapter,
   defaultCharacter,
@@ -24,9 +31,13 @@ import {
   IDatabaseAdapter,
   validateCharacterConfig,
 } from "@ai16z/eliza";
+
+// Import plugins for extended functionality
 import { bootstrapPlugin } from "@ai16z/plugin-bootstrap";
 import { solanaPlugin } from "@ai16z/plugin-solana";
 import { nodePlugin } from "@ai16z/plugin-node";
+
+// Standard node modules and utilities
 import Database from "better-sqlite3";
 import fs from "fs";
 import readline from "readline";
@@ -36,15 +47,26 @@ import { fileURLToPath } from "url";
 import { character } from "./character.ts";
 import type { DirectClient } from "@ai16z/client-direct";
 
-const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
-const __dirname = path.dirname(__filename); // get the name of the directory
+// Setup __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+/**
+ * Creates a random delay between operations
+ * @param minTime Minimum delay in milliseconds (default: 1000)
+ * @param maxTime Maximum delay in milliseconds (default: 3000)
+ * @returns Promise that resolves after the delay
+ */
 export const wait = (minTime: number = 1000, maxTime: number = 3000) => {
   const waitTime =
     Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
   return new Promise((resolve) => setTimeout(resolve, waitTime));
 };
 
+/**
+ * Parses command line arguments for character configuration
+ * @returns Object containing character and characters paths
+ */
 export function parseArguments(): {
   character?: string;
   characters?: string;
@@ -66,6 +88,11 @@ export function parseArguments(): {
   }
 }
 
+/**
+ * Loads character configurations from JSON files
+ * @param charactersArg Comma-separated list of character file paths
+ * @returns Array of loaded Character objects
+ */
 export async function loadCharacters(
   charactersArg: string
 ): Promise<Character[]> {
@@ -102,6 +129,12 @@ export async function loadCharacters(
   return loadedCharacters;
 }
 
+/**
+ * Retrieves the appropriate API token for the specified model provider
+ * @param provider The AI model provider (OpenAI, Anthropic, etc.)
+ * @param character The character configuration
+ * @returns The API token for the specified provider
+ */
 export function getTokenForProvider(
   provider: ModelProviderName,
   character: Character
@@ -148,6 +181,11 @@ export function getTokenForProvider(
   }
 }
 
+/**
+ * Initializes the database connection (PostgreSQL or SQLite)
+ * @param dataDir Directory for SQLite database file
+ * @returns Database adapter instance
+ */
 function initializeDatabase(dataDir: string) {
   if (process.env.POSTGRES_URL) {
     const db = new PostgresDatabaseAdapter({
@@ -163,6 +201,12 @@ function initializeDatabase(dataDir: string) {
   }
 }
 
+/**
+ * Initializes client interfaces based on character configuration
+ * @param character The character configuration
+ * @param runtime The agent runtime instance
+ * @returns Array of initialized client interfaces
+ */
 export async function initializeClients(
   character: Character,
   runtime: IAgentRuntime
@@ -202,6 +246,14 @@ export async function initializeClients(
   return clients;
 }
 
+/**
+ * Creates a new agent instance with the specified configuration
+ * @param character The character configuration
+ * @param db Database adapter
+ * @param cache Cache manager
+ * @param token API token
+ * @returns New AgentRuntime instance
+ */
 export function createAgent(
   character: Character,
   db: IDatabaseAdapter,
@@ -232,6 +284,12 @@ export function createAgent(
   });
 }
 
+/**
+ * Initializes file system based cache for a character
+ * @param baseDir Base directory for cache storage
+ * @param character Character configuration
+ * @returns Initialized cache manager
+ */
 function intializeFsCache(baseDir: string, character: Character) {
   const cacheDir = path.resolve(baseDir, character.id, "cache");
 
@@ -239,11 +297,22 @@ function intializeFsCache(baseDir: string, character: Character) {
   return cache;
 }
 
+/**
+ * Initializes database-based cache for a character
+ * @param character Character configuration
+ * @param db Database cache adapter
+ * @returns Initialized cache manager
+ */
 function intializeDbCache(character: Character, db: IDatabaseCacheAdapter) {
   const cache = new CacheManager(new DbCacheAdapter(db, character.id));
   return cache;
 }
 
+/**
+ * Starts an agent instance with the specified character configuration
+ * @param character Character configuration
+ * @param directClient Direct client interface
+ */
 async function startAgent(character: Character, directClient: DirectClient) {
   try {
     character.id ??= stringToUuid(character.name);
@@ -280,6 +349,10 @@ async function startAgent(character: Character, directClient: DirectClient) {
   }
 }
 
+/**
+ * Main function to initialize and start all configured agents
+ * Handles database setup, cache initialization, and client startup
+ */
 const startAgents = async () => {
   const directClient = await DirectClientInterface.start();
   const args = parseArguments();
@@ -329,6 +402,11 @@ rl.on("SIGINT", () => {
   process.exit(0);
 });
 
+/**
+ * Processes user input and routes it to the appropriate agent
+ * @param input User's input text
+ * @param agentId ID of the agent to handle the input
+ */
 async function handleUserInput(input, agentId) {
   if (input.toLowerCase() === "exit") {
     rl.close();
